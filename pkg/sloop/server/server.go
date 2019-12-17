@@ -9,8 +9,10 @@ package server
 
 import (
 	"flag"
+	"net/http"
 	"os"
 	"path"
+	"runtime/pprof"
 	"strings"
 	"time"
 
@@ -43,6 +45,21 @@ func RealMain() error {
 	err := conf.Validate()
 	if err != nil {
 		return errors.Wrap(err, "config validation failed")
+	}
+
+	if conf.CpuProfile {
+		f, err := os.Create("./cpu.prof")
+		if err != nil {
+			glog.Fatal(err)
+		}
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
+	if conf.MemProfile {
+		go func() {
+			glog.Infof("Opening pprof debug endpoint on :6060")
+			glog.Error(http.ListenAndServe("localhost:6060", nil))
+		}()
 	}
 
 	kubeContext, err := ingress.GetKubernetesContext(conf.ApiServerHost, conf.UseKubeContext)

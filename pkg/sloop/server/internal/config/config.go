@@ -51,9 +51,14 @@ type SloopConfig struct {
 	ApiServerHost           string        `json:"apiServerHost"`
 	WatchCrds               bool          `json:"watchCrds"`
 	RestoreDatabaseFile     string        `json:"restoreDatabaseFile"`
+	CpuProfile		 bool          `json:"cpuProfile"`
+	MemProfile bool `json:"memProfile"`
 }
 
 func registerFlags(fs *flag.FlagSet, config *SloopConfig) {
+	fs.BoolVar(&config.CpuProfile, "cpuprofile", false, "write profile to file")
+	fs.BoolVar(&config.MemProfile, "memprofile",false, "expose debug profiler")
+
 	fs.StringVar(&config.ConfigFile, "config", "", "Path to a yaml or json config file")
 	fs.BoolVar(&config.DisableKubeWatcher, "disable-kube-watch", false, "Turn off kubernetes watch")
 	fs.DurationVar(&config.KubeWatchResyncInterval, "kube-watch-resync-interval", 30*time.Minute,
