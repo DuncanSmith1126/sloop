@@ -4,3 +4,6 @@
 /data/
 coverage.out
 sloop.iml
+*.so
+pkg/plugins/hostrepair/*
+tools/*

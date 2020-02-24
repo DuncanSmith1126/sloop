@@ -9,8 +9,12 @@ package server
 
 import (
 	"flag"
+	"fmt"
+	"github.com/salesforce/sloop/pkg/sloop/queries"
 	"os"
 	"path"
+	"path/filepath"
+	"plugin"
 	"strings"
 	"time"
 
@@ -49,6 +53,8 @@ func RealMain() error {
 	if err != nil {
 		return errors.Wrap(err, "failed to get kubernetes context")
 	}
+
+	setUpPlugins(conf)
 
 	// Channel used for updates from ingress to store
 	// The channel is owned by this function, and no external code should close this!
@@ -172,6 +178,45 @@ func RealMain() error {
 
 	glog.Infof("RunWithConfig finished")
 	return nil
+}
+
+func setUpPlugins(conf *config.SloopConfig) {
+	glog.Infof("Setting up plugins")
+	matches, err := filepath.Glob(conf.QueryPluginDir + "/*/*.so")
+	if err != nil {
+		panic(fmt.Sprintf("Failed to initialize plugins %v", err.Error()))
+	}
+	if len(matches) == 0 {
+		panic(fmt.Sprintf("Plugin dir %v contained no .so files (Did you forget to build your plugins?)", conf.QueryPluginDir))
+	}
+	for _, queryPluginFile := range matches {
+		p, err := plugin.Open(queryPluginFile)
+		if err != nil {
+			panic(fmt.Sprintf("failed to load plugin %v %v", queryPluginFile, err.Error()))
+		}
+
+		queryName, err := p.Lookup("QueryName")
+		if err != nil {
+			panic(fmt.Sprintf("Loaded plugin %v but did not find \"QueryName\" symbol", queryPluginFile))
+		}
+
+		queryNameString, ok := queryName.(*string)
+		if !ok {
+			panic(fmt.Sprintf("Loaded plugin symbol QueryName but was not a string pointer"))
+		}
+
+		query, err := p.Lookup("Query")
+		if err != nil {
+			panic(fmt.Sprintf("Loaded plugin %v but did not find \"Query\" symbol", queryPluginFile))
+		}
+
+		queryFunc, ok := query.(*queries.GanttJsonQuery)
+		if !ok {
+			panic(fmt.Sprintf("Loaded plugin symbol Query but was not a valid Query Function"))
+		}
+		queries.QueryFuncs[*queryNameString] = *queryFunc
+		glog.Infof("Loaded plugin %v successfully", queryPluginFile)
+	}
 }
 
 // By default glog will not print anything to console, which can confuse users

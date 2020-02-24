@@ -197,6 +197,7 @@ function processAndSortResources(result) {
                         severity: worstSeverity,
                         reason: e.text,
                         count: splitText[2],
+                        message: e.message,
                     };
                     return overlay
                 })
@@ -298,6 +299,7 @@ function bindMouseEvents(svg) {
 
             let content = {
                 text: thisOverlay.text,
+                message: thisOverlay.message,
                 kind: d.kind,
                 namespace: d.namespace,
                 title: d.text,
@@ -336,6 +338,7 @@ function getHeatmapContent(d) {
                  <td> <b> ${splitText[0]} </b> </td>
                  <td> <b> ${splitText[2]} </b> </td> 
                  <td> <b style="color:${severityColor}">${severityText}</b> </td>
+                 <td> <b style=""</td>
                  </tr>` + r
     }, "");
 
@@ -343,6 +346,7 @@ function getHeatmapContent(d) {
     return `Name: <b>${d.title}</b><br/>
         Kind: <b>${d.kind}</b><br/>
         Namespace: <b>${d.namespace}</b><br />
+        Namespace: <b>${d.message}</b><br />
         ${table}
         ${formatDateTime(d.start)} - ${formatDateTime(d.end)}`
 }
@@ -486,7 +490,8 @@ function showDetailedTooltip(d, event, parent) {
                 title: d.text,
                 kind: d.kind,
                 namespace: d.namespace,
-                time: theTime
+                time: theTime,
+                message: d.message,
             }
         );
         tooltip.html(resourceBarHtml);

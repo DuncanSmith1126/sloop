@@ -16,25 +16,7 @@ import (
 )
 
 // Takes in arguments from the web page, runs the query, and returns json
-type ganttJsonQuery = func(params url.Values, tables typed.Tables, startTime time.Time, endTime time.Time, requestId string) ([]byte, error)
-
-var funcMap = map[string]ganttJsonQuery{
-	"EventHeatMap":      EventHeatMap3Query,
-	"GetEventData":      GetEventData,
-	"GetResPayload":     GetResPayload,
-	"Namespaces":        NamespaceQuery,
-	"Kinds":             KindQuery,
-	"Queries":           QueryAvailableQueries,
-	"GetResSummaryData": GetResSummaryData,
-}
-
-func Default() string {
-	return "EventHeatMap"
-}
-
-func GetNamesOfQueries() []string {
-	return []string{"EventHeatMap"}
-}
+type GanttJsonQuery = func(params url.Values, tables typed.Tables, startTime time.Time, endTime time.Time, requestId string) ([]byte, error)
 
 func RunQuery(queryName string, params url.Values, tables typed.Tables, maxLookBack time.Duration, requestId string) ([]byte, error) {
 	startTime, endTime, err := computeTimeRange(params, tables, maxLookBack)
@@ -43,7 +25,7 @@ func RunQuery(queryName string, params url.Values, tables typed.Tables, maxLookB
 		return []byte{}, err
 	}
 
-	fn, ok := funcMap[queryName]
+	fn, ok := QueryFuncs[queryName]
 	if !ok {
 		return []byte{}, fmt.Errorf("Query not found: " + queryName)
 	}

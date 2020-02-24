@@ -33,4 +33,5 @@ type Overlay struct {
 	StartDate int64  `json:"start_date"`
 	Duration  int64  `json:"duration"`
 	EndDate   int64  `json:"end_date"`
+	Message   string `json:"message"`
 }

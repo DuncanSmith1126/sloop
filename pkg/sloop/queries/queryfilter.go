@@ -18,6 +18,22 @@ import (
 	"time"
 )
 
+var QueryFuncs map[string]GanttJsonQuery
+
+// Assign values in init() since the query function relies on the contents
+// and causes initialization loop failure if initialized before init()
+func init() {
+	QueryFuncs = map[string]GanttJsonQuery{
+		"EventHeatMap":      EventHeatMap3Query,
+		"GetEventData":      GetEventData,
+		"GetResPayload":     GetResPayload,
+		"Namespaces":        NamespaceQuery,
+		"Kinds":             KindQuery,
+		"GetResSummaryData": GetResSummaryData,
+		"Queries":           QueryAvailableQueries,
+	}
+}
+
 // Consider: Make use of resources to limit what namespaces we return.
 // For example, if kind == ConfigMap, only return namespaces that contain a ConfigMap
 func NamespaceQuery(params url.Values, tables typed.Tables, startTime time.Time, endTime time.Time, requestId string) ([]byte, error) {
@@ -72,8 +88,11 @@ func KindQuery(params url.Values, tables typed.Tables, startTime time.Time, endT
 }
 
 func QueryAvailableQueries(params url.Values, tables typed.Tables, startTime time.Time, endTime time.Time, requestId string) ([]byte, error) {
-	queries := GetNamesOfQueries()
-	bytes, err := json.MarshalIndent(queries, "", " ")
+	var res []string
+	for queries, _ := range QueryFuncs {
+		res = append(res, queries)
+	}
+	bytes, err := json.MarshalIndent(res, "", " ")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal json %v", err)
 	}

@@ -31,7 +31,7 @@ type rawData struct {
 
 func EventHeatMap3Query(params url.Values, t typed.Tables, queryStartTime time.Time, queryEndTime time.Time, requestId string) ([]byte, error) {
 	// Simple query of store for all rows in matching partitions (will include extra rows)
-	rawRows, err := getRawDataFromStore(params, t, queryStartTime, queryEndTime, requestId)
+	rawRows, err := GetRawDataFromStore(params, t, queryStartTime, queryEndTime, requestId)
 	if err != nil {
 		return nil, err
 	}
@@ -90,12 +90,12 @@ func EventHeatMap3Query(params url.Values, t typed.Tables, queryStartTime time.T
 
 	outputRowValidation(outputRows, requestId)
 
-	sortParam := params.Get(SortParam)
 	outputRoot := TimelineRoot{
-		Rows:    outputRows,
-		ViewOpt: ViewOptions{Sort: sortParam},
+		Rows: outputRows,
 	}
-
+	if params.Get(SortParam) != "" {
+		outputRoot.ViewOpt.Sort = params.Get(SortParam)
+	}
 	bytes, err := json.MarshalIndent(outputRoot, "", " ")
 	if err != nil {
 		return nil, fmt.Errorf("Failed to marshal json %v", err)
@@ -106,7 +106,7 @@ func EventHeatMap3Query(params url.Values, t typed.Tables, queryStartTime time.T
 
 // Grab data from the store.  This will return rows from all partitions that intersect with startTime-endTime
 // which will often include more rows that we need.
-func getRawDataFromStore(params url.Values, t typed.Tables, startTime time.Time, endTime time.Time, requestId string) (rawData, error) {
+func GetRawDataFromStore(params url.Values, t typed.Tables, startTime time.Time, endTime time.Time, requestId string) (rawData, error) {
 	ret := rawData{}
 	ret.Events = map[typed.EventCountKey]*typed.ResourceEventCounts{}
 	ret.Resources = map[typed.ResourceSummaryKey]*typed.ResourceSummary{}

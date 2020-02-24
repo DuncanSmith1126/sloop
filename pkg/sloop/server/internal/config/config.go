@@ -60,6 +60,7 @@ type SloopConfig struct {
 	BadgerVLogMaxEntries     uint          `json:"badgerVLogMaxEntries"`
 	BadgerUseLSMOnlyOptions  bool          `json:"badgerUseLSMOnlyOptions"`
 	BadgerEnableEventLogging bool          `json:"badgerEnableEventLogging"`
+	QueryPluginDir           string        `json:"queryPluginDir"`
 }
 
 func registerFlags(fs *flag.FlagSet, config *SloopConfig) {
@@ -95,6 +96,7 @@ func registerFlags(fs *flag.FlagSet, config *SloopConfig) {
 	fs.UintVar(&config.BadgerVLogMaxEntries, "badger-vlog-max-entries", 0, "Max number of entries per value log files. 0 = use badger default")
 	fs.BoolVar(&config.BadgerUseLSMOnlyOptions, "badger-use-lsm-only-options", true, "Sets a higher valueThreshold so values would be collocated with LSM tree reducing vlog disk usage")
 	fs.BoolVar(&config.BadgerEnableEventLogging, "badger-enable-event-logging", false, "Turns on badger event logging")
+	fs.StringVar(&config.QueryPluginDir, "query-plugin-dir", "./pkg/plugins/queries", "Loads each .so plugin file in this dir and all subdirs")
 }
 
 // This will first check if a config file is specified on cmd line using a temporary flagSet

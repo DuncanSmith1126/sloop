@@ -167,13 +167,15 @@ func Test_EventHeatMap3_OneDeploymentAnd3Events(t *testing.T) {
      "text": "ImagePullError:1 LivenessProveFailed:2",
      "start_date": 1551398820,
      "duration": 60,
-     "end_date": 1551398880
+     "end_date": 1551398880,
+	 "message": ""
     },
     {
      "text": "ContainerCreated:3",
      "start_date": 1551400080,
      "duration": 60,
-     "end_date": 1551400140
+     "end_date": 1551400140,
+	 "message": ""
     }
    ],
    "changedat": [
